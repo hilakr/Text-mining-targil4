@@ -117,6 +117,8 @@ tfidfFunction <- function(text,i){
         
         if (maxval < myarr[x,2])
           maxval = myarr[x,2];
+      }else {
+        maxval = 0;
       }
     }
   }
