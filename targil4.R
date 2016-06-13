@@ -111,15 +111,12 @@ tfidfFunction <- function(text,i){
   for (x in 1:length(myarr)){
     word = myarr[x];
     for (y in 1:length(query)){
-      if (word == query[y])
-      {
-       # print(query[y]);
-        
-        if (maxval < myarr[x,2])
-          maxval = myarr[x,2];
-      }else {
-        maxval = 0;
-      }
+     if (!is.na(word)){
+       if (word == query[y]){
+          if (maxval < myarr[x,2])
+           maxval = myarr[x,2];
+        }
+      } 
     }
   }
   return(maxval)
@@ -137,12 +134,9 @@ for (i in 1:nrow(train)){
   }
   
   else{
-    #   print("empty");
     train$tfidf_title[i] = 0;
   }
-  #print("u_d");
   if (length(u_d) >0){
-    #  print(u_d); 
     desc = union(scan_tokenizer(train$query[i]),scan_tokenizer(train$product_description[i]));
   }
   else{

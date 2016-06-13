@@ -2,7 +2,7 @@
 title: "TextMining"
 author: "HilaReut"
 date: "11 June 2016"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -36,7 +36,7 @@ each document was row in our data .
 we run the tf/idf for words from the query but we look for them in the words from the title/description.
 we took the higher score we get from the tf/idf.This improve our score .
 
-In addition we used the feature ???????? the Accompanied Code??
+In addition we used the feature from the Accompanied Code??
 
 
 <h3>Loading the data</h3>
@@ -84,7 +84,7 @@ levels(test$product_description_f1) <- union(levels(train$product_description_f1
 ####Similarity between two groups of words. 1:query-product_title; 2:query-product_description.
 ####using set_similarity(A, B) function.
 
-```{r}
+```{r warning=FALSE}
 myfunction <- function(text){
   df <- data.frame(text, stringsAsFactors = FALSE);
   docs <- Corpus(VectorSource(df$text));
@@ -131,14 +131,9 @@ levels(test$myfeature) <- union(levels(train$myfeature), levels(test$myfeature))
 levels(train$myfeature_title) <- union(levels(train$myfeature_title), levels(test$myfeature_title))
 levels(test$myfeature_title) <- union(levels(train$myfeature_title), levels(test$myfeature_title))
 
-```
-
 
 ###Third Feature
-####tfidf for query-product_title and for query-product-description.
-
-
-```{r}
+####tfidf algorithm .
 
 tfidfFunction <- function(text,i){
   #print(text)
@@ -164,23 +159,20 @@ tfidfFunction <- function(text,i){
   term_tfidf <-tapply(mydtm$v/slam::row_sums(mydtm)[mydtm$i], mydtm$j, mean) * log2(nrow(train)/slam::col_sums(mydtm > 0));
   #choose the max val for query words
   myarr = cbind(mydtm$dimnames$Terms,term_tfidf);
-  query = scan_tokenizer(train$query[i]);
   maxval = 0;
+  if (!is.na(train$query[i])){
+  query = scan_tokenizer(train$query[i]);
   for (x in 1:length(myarr)){
     word = myarr[x];
     for (y in 1:length(query)){
-      if (word == query[y])
-      {
-       # print(query[y]);
-        
-        if (maxval < myarr[x,2])
-          maxval = myarr[x,2];
-      }
-      else
-      {
-        maxval = 0;
-      }
+     if (!is.na(word) && !(is.na(query[y]))){
+       if (word == query[y]){
+          if (maxval < myarr[x,2])
+           maxval = myarr[x,2];
+        }
+      } 
     }
+  } 
   }
   return(maxval)
   
@@ -197,12 +189,9 @@ for (i in 1:nrow(train)){
   }
   
   else{
-    #   print("empty");
     train$tfidf_title[i] = 0;
   }
-  #print("u_d");
   if (length(u_d) >0){
-    #  print(u_d); 
     desc = union(scan_tokenizer(train$query[i]),scan_tokenizer(train$product_description[i]));
   }
   else{
@@ -244,12 +233,9 @@ levels(train$tfidf_desc) <- union(levels(train$tfidf_desc), levels(test$tfidf_de
 levels(test$tfidf_title) <- union(levels(train$tfidf_title), levels(test$tfidf_title))
 levels(test$tfidf_desc) <- union(levels(train$tfidf_desc), levels(test$tfidf_desc))
   
+###Model Creation
 
-
-```
-###Model creation
-####We choose to use random forest.
-```{r}
+####Random Forest:
 
 library(randomForest)
 model <- randomForest(median_relevance ~ query_f1+product_title_f1+product_description_f1+myfeature+myfeature_title+tfidf_desc+tfidf_title, data=train, ntree=3)
